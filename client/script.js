@@ -1,5 +1,5 @@
 // =========================================
-// GIFTPOOL - MERN FRONTEND SCRIPT
+// GIFTPOOL - MERN FRONTEND SCRIPT (GUEST + CLOUD)
 // =========================================
 
 const API_URL = "https://giftpool-backend.onrender.com/api";
@@ -7,7 +7,7 @@ const API_URL = "https://giftpool-backend.onrender.com/api";
 let currentPoolId = "Team-Gift-Pool";
 let payments = {};
 let currentBudget = 5000;
-let currentUserName = "Organizer";
+let currentUserName = "Guest User";
 let currentUserId = localStorage.getItem('giftpool_userid') || null;
 
 // Initialize App State on Load
@@ -30,13 +30,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (authBtn) authBtn.style.display = 'none';
         if (profilePill) profilePill.style.display = 'flex';
         if (emailDisp) emailDisp.innerText = localStorage.getItem('giftpool_email') || "User";
-        loadPool();
+        loadPool(); // Load from Cloud Database
     } else {
+        // GUEST MODE: Works locally without login
         const authBtn = document.getElementById('openAuthModalBtn');
         const profilePill = document.getElementById('userProfilePill');
         if (authBtn) authBtn.style.display = 'flex';
         if (profilePill) profilePill.style.display = 'none';
-        clearDashboardToFreshState();
+        
+        // Load default or local data for guest
+        payments = { "Alex": 1000, "Sam": 1500 };
+        currentBudget = 5000;
+        updateDashboardUI();
     }
 });
 
@@ -141,7 +146,10 @@ window.signOutUser = function() {
     const profilePill = document.getElementById('userProfilePill');
     if (authBtn) authBtn.style.display = 'flex';
     if (profilePill) profilePill.style.display = 'none';
-    clearDashboardToFreshState();
+    
+    payments = {};
+    updateDashboardUI();
+    alert("Signed out. You are now using the local calculator mode.");
 };
 
 window.saveWelcomeName = function() {
@@ -159,17 +167,18 @@ window.saveWelcomeName = function() {
 // =========================================
 
 window.loadPool = async function() {
-    if (!currentUserId) {
-        clearDashboardToFreshState();
-        return;
-    }
-
     const poolInput = document.getElementById('poolIdInput');
     const inputId = poolInput ? poolInput.value.trim() : "Team-Gift-Pool";
     currentPoolId = inputId || "Team-Gift-Pool";
     
     const poolTitle = document.getElementById('heroPoolTitle');
     if (poolTitle) poolTitle.innerText = currentPoolId;
+
+    // If guest mode (not logged in), just act as a local calculator
+    if (!currentUserId) {
+        updateDashboardUI();
+        return;
+    }
 
     try {
         const response = await fetch(`${API_URL}/pools/${currentUserId}/${currentPoolId}`);
@@ -203,7 +212,8 @@ window.loadPool = async function() {
 };
 
 async function saveToBackend() {
-    if (!currentUserId) return;
+    // Only save to cloud database if user is logged in
+    if (!currentUserId) return; 
     try {
         await fetch(`${API_URL}/pools/save`, {
             method: 'POST',
@@ -221,18 +231,16 @@ async function saveToBackend() {
 }
 
 window.deleteCurrentPool = async function() {
-    if (!currentUserId) return;
-    if (confirm(`Mark "${currentPoolId}" as completed and clear its data?`)) {
-        payments = {};
-        currentBudget = 5000;
+    payments = {};
+    currentBudget = 5000;
+    if (currentUserId) {
         await saveToBackend();
-        document.getElementById('poolIdInput').value = "Team-Gift-Pool";
-        loadPool();
     }
+    document.getElementById('poolIdInput').value = "Team-Gift-Pool";
+    loadPool();
 };
 
 window.initializeNewPoolFromCard = function() {
-    if (!currentUserId) return alert("Please sign in first.");
     currentBudget = parseFloat(document.getElementById('setupBudgetInput').value) || 5000;
     const memberName = document.getElementById('setupFirstMemberInput').value.trim() || currentUserName;
     const memberAmount = parseFloat(document.getElementById('setupFirstMemberAmountInput').value) || 0;
@@ -276,7 +284,6 @@ window.toggleDarkMode = function() {
 };
 
 window.openAddMemberModal = function() {
-    if (!currentUserId) return alert("Please sign in first.");
     document.getElementById('modalNameInput').value = '';
     document.getElementById('modalPaidInput').value = '';
     document.getElementById('addMemberModal').style.display = 'flex';
@@ -317,19 +324,8 @@ window.closeUpiModal = function() {
     document.getElementById('upiModal').style.display = 'none';
 };
 
-function clearDashboardToFreshState() {
-    payments = {};
-    currentBudget = 5000;
-    updateDashboardUI(true);
-}
-
-function updateDashboardUI(isLoggedOut = false) {
+function updateDashboardUI() {
     const tbody = document.getElementById('participantTableBody');
-    if (isLoggedOut || !currentUserId) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">Please sign in to view your private pool data.</td></tr>`;
-        return;
-    }
-
     const names = Object.keys(payments);
     const totalCollected = Object.values(payments).reduce((a, b) => a + b, 0);
     const count = names.length;
@@ -384,7 +380,6 @@ function updateDashboardUI(isLoggedOut = false) {
 }
 
 window.generateSettlementActions = function() {
-    if (!currentUserId) return;
     const fairShare = Object.keys(payments).length > 0 ? currentBudget / Object.keys(payments).length : 0;
     const balances = {};
     for (const [name, paid] of Object.entries(payments)) {
@@ -441,7 +436,6 @@ window.toggleMobileSidebar = function() {
 };
 
 window.exportToExcel = function() {
-    if (!currentUserId) return alert("Please sign in first.");
     const names = Object.keys(payments);
     if (names.length === 0) return alert("No data available to export.");
 
