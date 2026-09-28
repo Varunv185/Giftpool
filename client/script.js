@@ -32,15 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emailDisp) emailDisp.innerText = localStorage.getItem('giftpool_email') || "User";
         loadPool(); // Load from Cloud Database
     } else {
-        // GUEST MODE: Works locally without login
+        // GUEST MODE: Starts completely fresh with 0 members
         const authBtn = document.getElementById('openAuthModalBtn');
         const profilePill = document.getElementById('userProfilePill');
         if (authBtn) authBtn.style.display = 'flex';
         if (profilePill) profilePill.style.display = 'none';
         
-        // Load default or local data for guest
-        payments = { "Alex": 1000, "Sam": 1500 };
-        currentBudget = 5000;
+        payments = {}; // Starts empty
+        currentBudget = 0;
         updateDashboardUI();
     }
 });
