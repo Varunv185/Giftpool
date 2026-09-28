@@ -51,7 +51,6 @@
         <!-- MAIN CONTAINER -->
         <main class="main-container">
             <!-- TOP HEADER BAR -->
-            <!-- TOP HEADER BAR -->
             <header class="top-header">
                 <div class="header-pool-selector">
                     <!-- HAMBURGER MENU BUTTON -->
@@ -69,7 +68,7 @@
                     <div class="pool-dropdown-group">
                         <input type="text" id="poolIdInput" value="Team-Gift-Pool" onchange="loadPool()"
                             title="Type Pool Name">
-                        <span class="pool-meta">Firebase Sync Active</span>
+                        <span class="pool-meta">MongoDB Sync Active</span>
                     </div>
 
                     <!-- DESKTOP / MOBILE ACTIONS -->
@@ -85,13 +84,10 @@
                             class="fa-solid fa-moon" id="themeIcon"></i></button>
 
                     <div id="authSection">
-                        <!-- CLEAN SIGN IN BUTTON (Icon + Short Text) -->
                         <button onclick="openAuthModal()" class="btn-primary mobile-auth-btn" id="openAuthModalBtn">
                             <i class="fa-solid fa-user-lock"></i> <span class="auth-btn-text">Sign In</span>
                         </button>
                         <div class="user-profile-pill" id="userProfilePill" style="display: none;">
-                            <img id="userAvatarImg" src="" alt="Avatar" class="avatar-img"
-                                style="width:32px; height:32px; border-radius:50%;">
                             <div class="user-info">
                                 <strong id="userNameDisplay">User</strong>
                                 <span id="userEmailDisplay">email@gmail.com</span>
@@ -313,54 +309,30 @@
         </div>
     </div>
 
+    <!-- AUTHENTICATION MODAL -->
     <div id="authModal" class="modal-overlay" style="display: none;">
-        <!-- Inside your authModal in index.html -->
-        <div>
-            <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Email Address</label>
-            <input type="email" id="authEmailInput" autocomplete="username" placeholder="name@example.com"
-                style="width:100%; padding:10px; border:1px solid var(--border); background:var(--bg-color); color:var(--text-main); border-radius:8px;">
-        </div>
-        <div>
-            <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Password</label>
-            <input type="password" id="authPasswordInput" autocomplete="current-password" placeholder="••••••••"
-                style="width:100%; padding:10px; border:1px solid var(--border); background:var(--bg-color); color:var(--text-main); border-radius:8px;">
-        </div>
         <div class="modal-content" style="width: 400px; text-align: center;">
             <div class="modal-header">
                 <h2>🔐 Authentication</h2>
-                <button onclick="closeAuthModal()" class="btn-icon-dark"><i
-                        class="fa-solid fa-xmark fa-xl"></i></button>
+                <button onclick="closeAuthModal()" class="btn-icon-dark"><i class="fa-solid fa-xmark fa-xl"></i></button>
             </div>
             <div class="modal-body">
                 <p class="modal-desc" style="margin-bottom: 20px;">Sign in to save your pool activity securely.</p>
-                <button onclick="signInWithGoogle()" class="btn-google-auth"
-                    style="width:100%; padding:12px; background:white; color:#333; border:1px solid var(--border); border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; margin-bottom:20px;">
-                    <i class="fa-brands fa-google" style="color:#ea4335;"></i> Continue with Google
-                </button>
-                <div
-                    style="display:flex; align-items:center; text-align:center; color:var(--text-muted); margin-bottom:20px;">
-                    <hr style="flex:1; border-color:var(--border);">
-                    <span style="padding:0 10px; font-size:0.8rem;">OR EMAIL</span>
-                    <hr style="flex:1; border-color:var(--border);">
-                </div>
                 <div style="text-align: left; display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
                     <div>
-                        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Email
-                            Address</label>
-                        <input type="email" id="authEmailInput" placeholder="name@example.com"
+                        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Email Address</label>
+                        <input type="email" id="authEmailInput" autocomplete="username" placeholder="name@example.com"
                             style="width:100%; padding:10px; border:1px solid var(--border); background:var(--bg-color); color:var(--text-main); border-radius:8px;">
                     </div>
                     <div>
-                        <label
-                            style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Password</label>
-                        <input type="password" id="authPasswordInput" placeholder="••••••••"
+                        <label style="font-size:0.85rem; font-weight:600; display:block; margin-bottom:4px;">Password</label>
+                        <input type="password" id="authPasswordInput" autocomplete="current-password" placeholder="••••••••"
                             style="width:100%; padding:10px; border:1px solid var(--border); background:var(--bg-color); color:var(--text-main); border-radius:8px;">
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button onclick="handleEmailSignIn()" class="btn-primary" style="flex:1;">Sign In</button>
-                    <button onclick="handleEmailSignUp()" class="btn-secondary-sm"
-                        style="flex:1; padding:10px;">Register</button>
+                    <button type="button" onclick="handleEmailSignIn()" class="btn-primary" style="flex:1;">Sign In</button>
+                    <button type="button" onclick="handleEmailSignUp()" class="btn-secondary-sm" style="flex:1; padding:10px;">Register</button>
                 </div>
             </div>
         </div>
@@ -413,7 +385,7 @@
     <div id="poolsModal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📁 Firebase Dashboards Library</h2>
+                <h2>📁 Pool Library</h2>
                 <button onclick="closeModal()" class="btn-icon-dark"><i class="fa-solid fa-xmark fa-xl"></i></button>
             </div>
             <div class="modal-body">
