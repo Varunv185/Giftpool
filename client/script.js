@@ -54,9 +54,7 @@ window.closeAuthModal = () => {
     if (modal) modal.style.display = 'none'; 
 };
 
-window.handleEmailSignIn = async function(event) {
-    if (event) event.preventDefault(); // Prevents form reload if wrapped in a form
-
+window.handleEmailSignIn = async function() {
     const emailInput = document.getElementById('authEmailInput');
     const passwordInput = document.getElementById('authPasswordInput');
     
@@ -84,9 +82,7 @@ window.handleEmailSignIn = async function(event) {
     }
 };
 
-window.handleEmailSignUp = async function(event) {
-    if (event) event.preventDefault();
-
+window.handleEmailSignUp = async function() {
     const emailInput = document.getElementById('authEmailInput');
     const passwordInput = document.getElementById('authPasswordInput');
     
