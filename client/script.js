@@ -15,19 +15,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const savedName = localStorage.getItem('giftpool_username');
     if (savedName) {
         currentUserName = savedName;
-        document.getElementById('userNameDisplay').innerText = currentUserName;
-        document.getElementById('heroWelcomeText').innerText = `Hi ${currentUserName}! 👋`;
-        document.getElementById('welcomeModal').style.display = 'none';
+        const nameDisp = document.getElementById('userNameDisplay');
+        const welcomeText = document.getElementById('heroWelcomeText');
+        const welcomeModal = document.getElementById('welcomeModal');
+        if (nameDisp) nameDisp.innerText = currentUserName;
+        if (welcomeText) welcomeText.innerText = `Hi ${currentUserName}! 👋`;
+        if (welcomeModal) welcomeModal.style.display = 'none';
     }
 
     if (currentUserId) {
-        document.getElementById('openAuthModalBtn').style.display = 'none';
-        document.getElementById('userProfilePill').style.display = 'flex';
-        document.getElementById('userEmailDisplay').innerText = localStorage.getItem('giftpool_email') || "User";
+        const authBtn = document.getElementById('openAuthModalBtn');
+        const profilePill = document.getElementById('userProfilePill');
+        const emailDisp = document.getElementById('userEmailDisplay');
+        if (authBtn) authBtn.style.display = 'none';
+        if (profilePill) profilePill.style.display = 'flex';
+        if (emailDisp) emailDisp.innerText = localStorage.getItem('giftpool_email') || "User";
         loadPool();
     } else {
-        document.getElementById('openAuthModalBtn').style.display = 'flex';
-        document.getElementById('userProfilePill').style.display = 'none';
+        const authBtn = document.getElementById('openAuthModalBtn');
+        const profilePill = document.getElementById('userProfilePill');
+        if (authBtn) authBtn.style.display = 'flex';
+        if (profilePill) profilePill.style.display = 'none';
         clearDashboardToFreshState();
     }
 });
@@ -36,10 +44,19 @@ document.addEventListener("DOMContentLoaded", () => {
 // 1. AUTHENTICATION (MERN API)
 // =========================================
 
-window.openAuthModal = () => { document.getElementById('authModal').style.display = 'flex'; };
-window.closeAuthModal = () => { document.getElementById('authModal').style.display = 'none'; };
+window.openAuthModal = () => { 
+    const modal = document.getElementById('authModal');
+    if (modal) modal.style.display = 'flex'; 
+};
 
-window.handleEmailSignIn = async function() {
+window.closeAuthModal = () => { 
+    const modal = document.getElementById('authModal');
+    if (modal) modal.style.display = 'none'; 
+};
+
+window.handleEmailSignIn = async function(event) {
+    if (event) event.preventDefault(); // Prevents form reload if wrapped in a form
+
     const emailInput = document.getElementById('authEmailInput');
     const passwordInput = document.getElementById('authPasswordInput');
     
@@ -67,10 +84,19 @@ window.handleEmailSignIn = async function() {
     }
 };
 
-window.handleEmailSignUp = async function() {
-    const email = document.getElementById('authEmailInput').value.trim();
-    const password = document.getElementById('authPasswordInput').value;
-    if (!email || !password) return alert("Please enter email and password.");
+window.handleEmailSignUp = async function(event) {
+    if (event) event.preventDefault();
+
+    const emailInput = document.getElementById('authEmailInput');
+    const passwordInput = document.getElementById('authPasswordInput');
+    
+    const email = emailInput ? emailInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value : "";
+
+    if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+    }
 
     const name = email.split('@')[0];
     try {
@@ -97,11 +123,17 @@ function loginUserSession(userId, name, email) {
     localStorage.setItem('giftpool_username', name);
     localStorage.setItem('giftpool_email', email);
 
-    document.getElementById('openAuthModalBtn').style.display = 'none';
-    document.getElementById('userProfilePill').style.display = 'flex';
-    document.getElementById('userNameDisplay').innerText = name;
-    document.getElementById('userEmailDisplay').innerText = email;
-    document.getElementById('heroWelcomeText').innerText = `Hi ${name}! 👋`;
+    const authBtn = document.getElementById('openAuthModalBtn');
+    const profilePill = document.getElementById('userProfilePill');
+    const nameDisp = document.getElementById('userNameDisplay');
+    const emailDisp = document.getElementById('userEmailDisplay');
+    const welcomeText = document.getElementById('heroWelcomeText');
+
+    if (authBtn) authBtn.style.display = 'none';
+    if (profilePill) profilePill.style.display = 'flex';
+    if (nameDisp) nameDisp.innerText = name;
+    if (emailDisp) emailDisp.innerText = email;
+    if (welcomeText) welcomeText.innerText = `Hi ${name}! 👋`;
 
     loadPool();
 }
@@ -109,8 +141,10 @@ function loginUserSession(userId, name, email) {
 window.signOutUser = function() {
     localStorage.clear();
     currentUserId = null;
-    document.getElementById('openAuthModalBtn').style.display = 'flex';
-    document.getElementById('userProfilePill').style.display = 'none';
+    const authBtn = document.getElementById('openAuthModalBtn');
+    const profilePill = document.getElementById('userProfilePill');
+    if (authBtn) authBtn.style.display = 'flex';
+    if (profilePill) profilePill.style.display = 'none';
     clearDashboardToFreshState();
 };
 
@@ -134,28 +168,38 @@ window.loadPool = async function() {
         return;
     }
 
-    const inputId = document.getElementById('poolIdInput').value.trim() || "Team-Gift-Pool";
-    currentPoolId = inputId;
-    document.getElementById('heroPoolTitle').innerText = currentPoolId;
+    const poolInput = document.getElementById('poolIdInput');
+    const inputId = poolInput ? poolInput.value.trim() : "Team-Gift-Pool";
+    currentPoolId = inputId || "Team-Gift-Pool";
+    
+    const poolTitle = document.getElementById('heroPoolTitle');
+    if (poolTitle) poolTitle.innerText = currentPoolId;
 
     try {
         const response = await fetch(`${API_URL}/pools/${currentUserId}/${currentPoolId}`);
         const data = await response.json();
 
+        const setupCard = document.getElementById('newPoolSetupCard');
         if (data && data.payments && Object.keys(data.payments).length > 0) {
             payments = data.payments;
             currentBudget = data.budget || 5000;
-            document.getElementById('newPoolSetupCard').style.display = 'none';
+            if (setupCard) setupCard.style.display = 'none';
         } else {
             payments = {};
             currentBudget = 5000;
-            document.getElementById('setupPoolTitleDisplay').innerText = currentPoolId;
-            document.getElementById('setupBudgetInput').value = 5000;
-            document.getElementById('setupFirstMemberInput').value = currentUserName;
-            document.getElementById('setupFirstMemberAmountInput').value = 0;
-            document.getElementById('newPoolSetupCard').style.display = 'block';
+            const titleDisp = document.getElementById('setupPoolTitleDisplay');
+            const budgetInput = document.getElementById('setupBudgetInput');
+            const firstMember = document.getElementById('setupFirstMemberInput');
+            const firstAmt = document.getElementById('setupFirstMemberAmountInput');
+
+            if (titleDisp) titleDisp.innerText = currentPoolId;
+            if (budgetInput) budgetInput.value = 5000;
+            if (firstMember) firstMember.value = currentUserName;
+            if (firstAmt) firstAmt.value = 0;
+            if (setupCard) setupCard.style.display = 'block';
         }
-        document.getElementById('budgetInput').value = currentBudget;
+        const mainBudget = document.getElementById('budgetInput');
+        if (mainBudget) mainBudget.value = currentBudget;
         updateDashboardUI();
     } catch (e) {
         console.error("Error loading pool from backend:", e);
@@ -401,14 +445,6 @@ window.toggleMobileSidebar = function() {
 };
 
 window.exportToExcel = function() {
-    alert("Export feature ready.");
-};
-window.openPoolsModal = function() { alert("Pool Library available."); };
-window.closeModal = function() {};
-window.openImportModal = function() {};
-window.closeImportModal = function() {};
-window.filterMembersTable = function() {};
-window.exportToExcel = function() {
     if (!currentUserId) return alert("Please sign in first.");
     const names = Object.keys(payments);
     if (names.length === 0) return alert("No data available to export.");
@@ -432,3 +468,9 @@ window.exportToExcel = function() {
     link.click();
     document.body.removeChild(link);
 };
+
+window.openPoolsModal = function() { alert("Pool Library available."); };
+window.closeModal = function() {};
+window.openImportModal = function() {};
+window.closeImportModal = function() {};
+window.filterMembersTable = function() {};
