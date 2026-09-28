@@ -2,7 +2,7 @@
 // GIFTPOOL - MERN FRONTEND SCRIPT
 // =========================================
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://giftpool-backend.onrender.com/api";
 
 let currentPoolId = "Team-Gift-Pool";
 let payments = {};
