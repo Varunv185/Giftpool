@@ -40,9 +40,16 @@ window.openAuthModal = () => { document.getElementById('authModal').style.displa
 window.closeAuthModal = () => { document.getElementById('authModal').style.display = 'none'; };
 
 window.handleEmailSignIn = async function() {
-    const email = document.getElementById('authEmailInput').value.trim();
-    const password = document.getElementById('authPasswordInput').value;
-    if (!email || !password) return alert("Please enter email and password.");
+    const emailInput = document.getElementById('authEmailInput');
+    const passwordInput = document.getElementById('authPasswordInput');
+    
+    const email = emailInput ? emailInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value : "";
+
+    if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+    }
 
     try {
         const response = await fetch(`${API_URL}/auth/login`, {
