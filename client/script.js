@@ -32,14 +32,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emailDisp) emailDisp.innerText = localStorage.getItem('giftpool_email') || "User";
         loadPool(); // Load from Cloud Database
     } else {
-        // GUEST MODE: Starts completely fresh with 0 members
+        // GUEST CALCULATOR MODE: Always show setup card on refresh if empty
         const authBtn = document.getElementById('openAuthModalBtn');
         const profilePill = document.getElementById('userProfilePill');
         if (authBtn) authBtn.style.display = 'flex';
         if (profilePill) profilePill.style.display = 'none';
         
-        payments = {}; // Starts empty
-        currentBudget = 0;
+        payments = {};
+        currentBudget = 5000;
+        
+        const setupCard = document.getElementById('newPoolSetupCard');
+        if (setupCard) setupCard.style.display = 'block';
+        
+        const titleDisp = document.getElementById('setupPoolTitleDisplay');
+        const budgetInput = document.getElementById('setupBudgetInput');
+        const firstMember = document.getElementById('setupFirstMemberInput');
+        const firstAmt = document.getElementById('setupFirstMemberAmountInput');
+
+        if (titleDisp) titleDisp.innerText = currentPoolId;
+        if (budgetInput) budgetInput.value = 5000;
+        if (firstMember) firstMember.value = "";
+        if (firstAmt) firstAmt.value = 0;
+
+        const mainBudget = document.getElementById('budgetInput');
+        if (mainBudget) mainBudget.value = currentBudget;
+
         updateDashboardUI();
     }
 });
@@ -147,8 +164,12 @@ window.signOutUser = function() {
     if (profilePill) profilePill.style.display = 'none';
     
     payments = {};
+    currentBudget = 5000;
+    const setupCard = document.getElementById('newPoolSetupCard');
+    if (setupCard) setupCard.style.display = 'block';
+    
     updateDashboardUI();
-    alert("Signed out. You are now using the local calculator mode.");
+    alert("Signed out. You are now using local calculator mode.");
 };
 
 window.saveWelcomeName = function() {
@@ -173,7 +194,6 @@ window.loadPool = async function() {
     const poolTitle = document.getElementById('heroPoolTitle');
     if (poolTitle) poolTitle.innerText = currentPoolId;
 
-    // If guest mode (not logged in), just act as a local calculator
     if (!currentUserId) {
         updateDashboardUI();
         return;
@@ -211,7 +231,6 @@ window.loadPool = async function() {
 };
 
 async function saveToBackend() {
-    // Only save to cloud database if user is logged in
     if (!currentUserId) return; 
     try {
         await fetch(`${API_URL}/pools/save`, {
@@ -236,6 +255,10 @@ window.deleteCurrentPool = async function() {
         await saveToBackend();
     }
     document.getElementById('poolIdInput').value = "Team-Gift-Pool";
+    
+    const setupCard = document.getElementById('newPoolSetupCard');
+    if (setupCard && !currentUserId) setupCard.style.display = 'block';
+
     loadPool();
 };
 
@@ -247,7 +270,13 @@ window.initializeNewPoolFromCard = function() {
     payments = {};
     if (memberName) payments[memberName] = memberAmount;
 
-    saveToBackend();
+    const mainBudget = document.getElementById('budgetInput');
+    if (mainBudget) mainBudget.value = currentBudget;
+
+    if (currentUserId) {
+        saveToBackend();
+    }
+    
     document.getElementById('newPoolSetupCard').style.display = 'none';
     updateDashboardUI();
 };
@@ -256,14 +285,17 @@ window.promptChangeBudget = function() {
     const newB = prompt("Enter new target budget limit for this pool (₹):", currentBudget);
     if (newB !== null && !isNaN(newB)) {
         currentBudget = parseFloat(newB);
-        document.getElementById('budgetInput').value = currentBudget;
-        saveToBackend();
+        const mainBudget = document.getElementById('budgetInput');
+        if (mainBudget) mainBudget.value = currentBudget;
+        if (currentUserId) saveToBackend();
+        updateDashboardUI();
     }
 };
 
 window.updateBudget = function() {
     currentBudget = parseFloat(document.getElementById('budgetInput').value) || 5000;
-    saveToBackend();
+    if (currentUserId) saveToBackend();
+    updateDashboardUI();
 };
 
 // =========================================
@@ -298,7 +330,7 @@ window.submitAddMemberForm = function() {
     if (!name) return alert("Please enter a valid participant name.");
 
     payments[name] = (payments[name] || 0) + paid;
-    saveToBackend();
+    if (currentUserId) saveToBackend();
     closeAddMemberModal();
     updateDashboardUI();
 };
@@ -306,7 +338,7 @@ window.submitAddMemberForm = function() {
 window.removeParticipant = function(name) {
     if (confirm(`Remove ${name}?`)) {
         delete payments[name];
-        saveToBackend();
+        if (currentUserId) saveToBackend();
         updateDashboardUI();
     }
 };
