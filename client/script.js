@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (emailDisp) emailDisp.innerText = localStorage.getItem('giftpool_email') || "User";
         loadPool(); // Load from Cloud Database
     } else {
-        // GUEST CALCULATOR MODE: Always show setup card on refresh if empty
+        // GUEST CALCULATOR MODE: Always show setup card on refresh if empty, start fresh
         const authBtn = document.getElementById('openAuthModalBtn');
         const profilePill = document.getElementById('userProfilePill');
         if (authBtn) authBtn.style.display = 'flex';
@@ -466,6 +466,70 @@ window.toggleMobileSidebar = function() {
     }
 };
 
+// =========================================
+// 4. SMART DATA IMPORTER & EXCEL EXPORT
+// =========================================
+
+window.openImportModal = function() {
+    const modal = document.getElementById('importModal');
+    if (modal) modal.style.display = 'flex';
+};
+
+window.closeImportModal = function() {
+    const modal = document.getElementById('importModal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.processImport = function() {
+    const text = document.getElementById('importTextarea').value.trim();
+    if (!text) {
+        alert("Please paste some data to import.");
+        return;
+    }
+
+    const lines = text.split('\n');
+    let importedCount = 0;
+    const reportBox = document.getElementById('importReport');
+    
+    lines.forEach(line => {
+        const parts = line.split(/[,	\-]/);
+        if (parts.length >= 2) {
+            const name = parts[0].replace(/['"]+/g, '').trim();
+            const rawAmount = parts[1].replace(/[₹$,\s]/g, '').trim();
+            const amount = parseFloat(rawAmount) || 0;
+
+            if (name) {
+                payments[name] = (payments[name] || 0) + amount;
+                importedCount++;
+            }
+        }
+    });
+
+    if (importedCount > 0) {
+        if (currentUserId) saveToBackend();
+        updateDashboardUI();
+        window.closeImportModal();
+        if (reportBox) reportBox.innerHTML = `<span style="color:var(--success);">Successfully imported ${importedCount} members!</span>`;
+        document.getElementById('importTextarea').value = '';
+        alert(`Successfully imported ${importedCount} participants!`);
+    } else {
+        if (reportBox) reportBox.innerHTML = `<span style="color:var(--danger);">Could not parse data. Ensure format is: Name, Amount</span>`;
+    }
+};
+
+window.filterMembersTable = function() {
+    const query = document.getElementById('memberSearchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#participantTableBody tr');
+    rows.forEach(row => {
+        const nameText = row.cells[1] ? row.cells[1].innerText.toLowerCase() : "";
+        if (nameText.includes(query) || query === "") {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+};
+
 window.exportToExcel = function() {
     const names = Object.keys(payments);
     if (names.length === 0) return alert("No data available to export.");
@@ -492,6 +556,3 @@ window.exportToExcel = function() {
 
 window.openPoolsModal = function() { alert("Pool Library available."); };
 window.closeModal = function() {};
-window.openImportModal = function() {};
-window.closeImportModal = function() {};
-window.filterMembersTable = function() {};
